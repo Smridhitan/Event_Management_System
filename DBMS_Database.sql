@@ -569,6 +569,7 @@ BEGIN
         SELECT 1
         FROM Event e
         WHERE e.venue_id = NEW.venue_id
+        AND e.event_status <> 'Cancelled'
         AND NOT (
             NEW.end_date < e.start_date
             OR
