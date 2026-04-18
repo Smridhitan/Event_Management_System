@@ -1,3 +1,4 @@
+const { handleDbError } = require("../config/dbUtils");
 const db = require("../config/db");
 
 
@@ -29,8 +30,7 @@ exports.getEvents = async (req, res) => {
 
     res.json(events);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching events");
+    return handleDbError(err, res);
   }
 };
 
@@ -54,8 +54,7 @@ exports.getEventDetails = async (req, res) => {
 
     res.json(event[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching event details");
+    return handleDbError(err, res);
   }
 };
 
@@ -105,8 +104,7 @@ exports.registerEvent = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error registering for event");
+    return handleDbError(err, res);
   }
 };
 
@@ -133,8 +131,7 @@ exports.getMyEvents = async (req, res) => {
     res.json(events);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching user events");
+    return handleDbError(err, res);
   }
 };
 
@@ -165,7 +162,6 @@ exports.cancelEvent = async (req, res) => {
     res.send("Event registration cancelled");
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error cancelling event");
+    return handleDbError(err, res);
   }
 };

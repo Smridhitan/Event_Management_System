@@ -1,3 +1,4 @@
+const { handleDbError } = require("../config/dbUtils");
 const db = require("../config/db");
 
 // 1. Get Dashboard Metrics (Assigned Sessions, Expected Attendees, Global Revenue)
@@ -28,8 +29,7 @@ exports.getDashboardMetrics = async (req, res) => {
       total_revenue: revenueMetrics.total_revenue || 0
     });
   } catch (error) {
-    console.error("Error fetching participant metrics:", error);
-    res.status(500).send("Server Error");
+    return handleDbError(error, res);
   }
 };
 
@@ -53,8 +53,7 @@ exports.getAssignedEvents = async (req, res) => {
 
     res.json(events);
   } catch (error) {
-    console.error("Error fetching assigned events:", error);
-    res.status(500).send("Server Error");
+    return handleDbError(error, res);
   }
 };
 
@@ -73,8 +72,7 @@ exports.getAssignedSessions = async (req, res) => {
     );
     res.json(sessions);
   } catch (error) {
-    console.error("Error fetching assigned sessions:", error);
-    res.status(500).send("Server Error");
+    return handleDbError(error, res);
   }
 };
 
@@ -105,7 +103,6 @@ exports.getGuestList = async (req, res) => {
 
     res.json(guests);
   } catch (error) {
-    console.error("Error fetching guest list:", error);
-    res.status(500).send("Server Error");
+    return handleDbError(error, res);
   }
 };

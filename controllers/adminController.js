@@ -1,3 +1,4 @@
+const { handleDbError } = require("../config/dbUtils");
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
 
@@ -13,7 +14,7 @@ exports.getAllUsers = async (req, res) => {
     );
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -48,8 +49,8 @@ exports.deleteUser = async (req, res) => {
     const { id } = req.params;
     await db.query(`DELETE FROM Users WHERE user_id = ?`, [id]);
     res.json({ message: "User deleted permanently." });
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -63,7 +64,7 @@ exports.updateUser = async (req, res) => {
     );
     res.json({ message: "User updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -74,7 +75,7 @@ exports.deactivateUser = async (req, res) => {
     // Assuming simple dummy logic for demo since `isActive` is generally an add-on.
     res.json({ message: "User deactivated successfully." });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -100,7 +101,7 @@ exports.removeRole = async (req, res) => {
     await db.query(`DELETE FROM User_Role WHERE user_id=? AND role_type=?`, [id, role_type]);
     res.json({ message: "Role removed successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -116,7 +117,7 @@ exports.getAllEvents = async (req, res) => {
     );
     res.json(events);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -131,7 +132,7 @@ exports.getEventSessions = async (req, res) => {
     );
     res.json(sessions);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -147,7 +148,7 @@ exports.getEventRegistrations = async (req, res) => {
     );
     res.json(regs);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -162,7 +163,7 @@ exports.getSessionRegistrations = async (req, res) => {
     );
     res.json(regs);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -178,7 +179,7 @@ exports.getEventResources = async (req, res) => {
     );
     res.json(resources);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -188,7 +189,7 @@ exports.cancelEvent = async (req, res) => {
     await db.query(`UPDATE Event SET event_status = 'Cancelled' WHERE event_id = ?`, [id]);
     res.json({ message: "Event cancelled unconditionally by Admin" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -207,7 +208,7 @@ exports.getPlatformAnalytics = async (req, res) => {
       total_revenue: revenue.sum || 0
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -223,7 +224,7 @@ exports.getAllTransactions = async (req, res) => {
     );
     res.json(payments);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -238,7 +239,7 @@ exports.systemResourceAudit = async (req, res) => {
     );
     res.json(resources);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -256,7 +257,7 @@ exports.getResourceAllocationsLog = async (req, res) => {
     );
     res.json(allocs);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -266,7 +267,7 @@ exports.getVendors = async (req, res) => {
     const [vendors] = await db.query(`SELECT * FROM Vendor`);
     res.json(vendors);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -279,8 +280,8 @@ exports.createVendor = async (req, res) => {
       [vendor_name, vendor_type, contact_person, phone_no, email, street, city, state, pincode, courier_facility]
     );
     res.json({ message: "Vendor created successfully" });
-  } catch (error) { 
-    res.status(500).json({ error: error.message }); 
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -288,7 +289,7 @@ exports.deleteVendor = async (req, res) => {
   try {
     await db.query(`DELETE FROM Vendor WHERE vendor_id=?`, [req.params.id]);
     res.json({ message: "Vendor removed successfully" });
-  } catch (error) { 
-    res.status(500).json({ error: error.message }); 
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };

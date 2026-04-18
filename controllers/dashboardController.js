@@ -1,3 +1,4 @@
+const { handleDbError } = require("../config/dbUtils");
 const db = require("../config/db");
 
 exports.getOrganizerDashboard = async (req, res) => {
@@ -17,7 +18,7 @@ exports.getOrganizerDashboard = async (req, res) => {
 
     res.json({ revenue, vendors });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch organizer dashboard" });
+    return handleDbError(err, res);
   }
 };
 
@@ -35,7 +36,7 @@ exports.getSpeakerDashboard = async (req, res) => {
 
     res.json({ guestList });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch speaker dashboard" });
+    return handleDbError(err, res);
   }
 };
 
@@ -52,6 +53,6 @@ exports.getAdminDashboard = async (req, res) => {
 
     res.json({ users, totalEvents: eventsStats[0].count });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch admin dashboard" });
+    return handleDbError(err, res);
   }
 };

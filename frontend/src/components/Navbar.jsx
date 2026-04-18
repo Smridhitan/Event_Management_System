@@ -2,9 +2,16 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Compass, User, Calendar, LogIn } from 'lucide-react';
 
+const parseJwt = (token) => {
+  try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; }
+};
+
 const Navbar = () => {
   const location = useLocation();
-  const isAuthenticated = !!localStorage.getItem('token'); 
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!token;
+  const userPayload = token ? parseJwt(token) : null;
+  const role = userPayload?.role;
 
   return (
     <nav className="glass-panel" style={{ 
@@ -18,10 +25,12 @@ const Navbar = () => {
       </Link>
       
       <div className="flex items-center gap-6">
-        <Link to="/events" className="flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
-          <Calendar size={18} />
-          <span>Events</span>
-        </Link>
+        {isAuthenticated && role === 'Attendee' && (
+          <Link to="/events" className="flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+            <Calendar size={18} />
+            <span>Events</span>
+          </Link>
+        )}
         
         {isAuthenticated ? (
           <Link to="/dashboard" className="btn btn-secondary">

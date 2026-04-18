@@ -213,6 +213,8 @@ const OrgAnalytics = () => {
 const OrgEvents = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [venues, setVenues] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -241,20 +243,15 @@ const OrgEvents = () => {
       try {
         await api.post(`/organizer/events/${id}/cancel`);
         setEvents(events.map(ev => ev.event_id === id ? { ...ev, event_status: 'Cancelled' } : ev));
-      } catch(err) { alert("Failed to cancel"); }
+      } catch(err) { alert("Failed: " + (err.response?.data?.error || err.message)); }
     }
   };
 
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const formatYMD = (val) => {
         if (!val) return '';
-        if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-        const parts = val.split(/[-/]/);
-        if (parts.length === 3 && parts[0].length <= 2 && parts[2].length === 4) {
-          return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
         try { return new Date(val).toISOString().split('T')[0]; } catch(err) { return val; }
       };
 
@@ -267,12 +264,18 @@ const OrgEvents = () => {
         registration_deadline: formatYMD(formData.registration_deadline)
       };
 
-      await api.post('/organizer/events', payload);
+      if (isEditing) {
+        await api.put(`/organizer/events/${editId}`, payload);
+        alert("Event updated successfully!");
+      } else {
+        await api.post('/organizer/events', payload);
+        alert("Event drafted successfully!");
+      }
+      
       setShowModal(false);
       fetchEvents();
-      alert("Event drafted successfully!");
     } catch(err) {
-      alert("Failed to create event. Dates might be invalid or overlap.");
+      alert("Error: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -284,17 +287,48 @@ const OrgEvents = () => {
     return d.toISOString().split('T')[0];
   };
 
+  const openNew = () => {
+    setFormData({
+      event_name: '', event_type: 'Workshop', start_date: '', end_date: '', registration_fees: 0, registration_deadline: '', description: '', venue_id: '', available_slots: 100, city: ''
+    });
+    setIsEditing(false);
+    setEditId(null);
+    setShowModal(true);
+  };
+
+  const openEdit = (ev) => {
+    const extractYMD = (dateString) => {
+      if (!dateString) return '';
+      try { return new Date(dateString).toISOString().split('T')[0]; } catch(e) { return dateString; }
+    };
+    setFormData({
+      event_name: ev.event_name,
+      event_type: ev.event_type || 'Workshop',
+      start_date: extractYMD(ev.start_date),
+      end_date: extractYMD(ev.end_date),
+      registration_fees: ev.registration_fees,
+      registration_deadline: extractYMD(ev.registration_deadline),
+      description: ev.description || '',
+      venue_id: ev.venue_id,
+      available_slots: ev.available_slots,
+      city: ev.city || '' 
+    });
+    setIsEditing(true);
+    setEditId(ev.event_id);
+    setShowModal(true);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center" style={{ marginBottom: '1.5rem' }}>
          <h3>My Events</h3>
-         <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>+ Draft New Event</button>
+         <button className="btn btn-primary btn-sm" onClick={openNew}>+ Draft New Event</button>
       </div>
 
       {showModal && (
         <div style={{ marginBottom: '2rem', padding: '1.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--border-radius-sm)', background: 'var(--bg-elevated)' }}>
-          <h4 style={{ marginBottom: '1rem' }}>Create New Event</h4>
-          <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4">
+          <h4 style={{ marginBottom: '1rem' }}>{isEditing ? 'Edit Event Properties' : 'Create New Event'}</h4>
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Event Name</label>
                 <input required placeholder="e.g. AI Summit 2026" className="input" value={formData.event_name} onChange={e => setFormData({...formData, event_name: e.target.value})} />
@@ -365,7 +399,7 @@ const OrgEvents = () => {
              
              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={!formData.venue_id}>Create Event</button>
+                <button type="submit" className="btn btn-primary" disabled={!formData.venue_id}>{isEditing ? 'Save Changes' : 'Create Event'}</button>
              </div>
           </form>
         </div>
@@ -381,7 +415,10 @@ const OrgEvents = () => {
             <div className="flex gap-2">
                <span style={{ padding: '0.25rem 0.5rem', background: 'var(--bg-elevated)', borderRadius: 'var(--border-radius-sm)', fontSize: '0.85rem', color: ev.event_status === 'Cancelled' ? '#ef4444' : 'inherit' }}>{ev.event_status}</span>
                {ev.event_status !== 'Cancelled' && (
-                 <button className="btn btn-secondary btn-sm" onClick={() => handleCancel(ev.event_id)}>Cancel</button>
+                 <>
+                   <button className="btn btn-secondary btn-sm" onClick={() => openEdit(ev)}>Edit</button>
+                   <button className="btn btn-secondary btn-sm" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => handleCancel(ev.event_id)}>Cancel</button>
+                 </>
                )}
             </div>
           </div>

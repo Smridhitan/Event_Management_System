@@ -1,19 +1,33 @@
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { handleDbError } = require("../config/dbUtils");
 
 exports.register = async (req, res) => {
-  const { first_name, last_name, email, phone, username, password } = req.body;
+  try {
+    const { first_name, last_name, email, phone, username, password, role } = req.body;
 
-  const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, 10);
 
-  await db.query(
-    `INSERT INTO Users (first_name, last_name, email_id, phone_no, username, password_hash)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [first_name, last_name, email, phone, username, hash]
-  );
+    const [result] = await db.query(
+      `INSERT INTO Users (first_name, last_name, email_id, phone_no, username, password_hash)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [first_name, last_name, email, phone, username, hash]
+    );
 
-  res.send("User registered");
+    const userId = result.insertId;
+    const primaryRole = role || 'Attendee';
+
+    await db.query(`INSERT INTO User_Role (user_id, role_type) VALUES (?, ?)`, [userId, 'Attendee']);
+    
+    if (primaryRole !== 'Attendee' && ['Organizer', 'Speaker', 'Performer'].includes(primaryRole)) {
+      await db.query(`INSERT INTO User_Role (user_id, role_type) VALUES (?, ?)`, [userId, primaryRole]);
+    }
+
+    res.send("User registered");
+  } catch (error) {
+    return handleDbError(error, res);
+  }
 };
 
 exports.login = async (req, res) => {

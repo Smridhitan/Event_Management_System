@@ -20,6 +20,7 @@ const Login = () => {
         payload.last_name = e.target.fullName.value.split(' ').slice(1).join(' ') || '';
         payload.phone = e.target.phone.value;
         payload.username = e.target.fullName.value.split(' ')[0].toLowerCase() + Math.floor(Math.random() * 1000);
+        payload.role = e.target.role.value;
         
         await api.post('/auth/register', payload);
         alert('Registration successful. Please log in.');
@@ -65,6 +66,17 @@ const Login = () => {
                 <label className="input-label">Phone</label>
                 <div style={{ position: 'relative' }}>
                   <input type="text" name="phone" className="input-field" placeholder="+1234567890" required />
+                </div>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Role</label>
+                <div style={{ position: 'relative' }}>
+                  <select name="role" className="input-field" defaultValue="Attendee" required style={{ paddingLeft: '1rem', appearance: 'auto' }}>
+                    <option value="Attendee">Attendee</option>
+                    <option value="Organizer">Organizer</option>
+                    <option value="Speaker">Speaker</option>
+                    <option value="Performer">Performer</option>
+                  </select>
                 </div>
               </div>
             </>

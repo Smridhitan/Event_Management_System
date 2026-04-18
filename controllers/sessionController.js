@@ -1,3 +1,4 @@
+const { handleDbError } = require("../config/dbUtils");
 const db = require("../config/db");
 
 
@@ -26,8 +27,7 @@ exports.getSessionsByEvent = async (req, res) => {
     res.json(sessions);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching sessions");
+    return handleDbError(err, res);
   }
 };
 
@@ -64,8 +64,7 @@ exports.registerSession = async (req, res) => {
     res.send("Session registered successfully");
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error registering for session");
+    return handleDbError(err, res);
   }
 };
 
@@ -95,8 +94,7 @@ exports.getMySessions = async (req, res) => {
     res.json(sessions);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching user sessions");
+    return handleDbError(err, res);
   }
 };
 
@@ -127,7 +125,6 @@ exports.cancelSession = async (req, res) => {
     res.send("Session cancelled successfully");
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error cancelling session");
+    return handleDbError(err, res);
   }
 };

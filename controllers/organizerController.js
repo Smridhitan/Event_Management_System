@@ -1,3 +1,4 @@
+const { handleDbError } = require("../config/dbUtils");
 const db = require("../config/db");
 
 // ==========================================
@@ -14,7 +15,7 @@ exports.getEvents = async (req, res) => {
     );
     res.json(events);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -28,7 +29,7 @@ exports.createEvent = async (req, res) => {
     );
     res.json({ message: "Event created successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -43,7 +44,7 @@ exports.updateEvent = async (req, res) => {
     );
     res.json({ message: "Event updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -54,7 +55,7 @@ exports.cancelEvent = async (req, res) => {
     await db.query(`UPDATE Event SET event_status = 'Cancelled' WHERE event_id = ? AND organizer_id = ?`, [id, req.user.user_id]);
     res.json({ message: "Event cancelled successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -74,7 +75,7 @@ exports.getEventAttendees = async (req, res) => {
     );
     res.json(attendees);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -92,7 +93,7 @@ exports.getSessionAttendees = async (req, res) => {
     );
     res.json(attendees);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -117,7 +118,7 @@ exports.getAnalytics = async (req, res) => {
     
     res.json({ metrics: revenue, overall: globals[0] });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -139,7 +140,7 @@ exports.createSession = async (req, res) => {
     );
     res.json({ message: "Session created successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -151,7 +152,7 @@ exports.getVendors = async (req, res) => {
     const [vendors] = await db.query(`SELECT * FROM Vendor`);
     res.json(vendors);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -164,7 +165,7 @@ exports.getEventVendors = async (req, res) => {
     );
     res.json(linked);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -177,7 +178,7 @@ exports.linkVendor = async (req, res) => {
     await db.query(`INSERT IGNORE INTO Event_Vendor (event_id, vendor_id) VALUES (?, ?)`, [event_id, vendor_id]);
     res.json({ message: "Vendor successfully synced to Event" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -186,7 +187,7 @@ exports.getResources = async (req, res) => {
     const [resources] = await db.query(`SELECT * FROM Resource`);
     res.json(resources);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -195,7 +196,7 @@ exports.getVenues = async (req, res) => {
     const [venues] = await db.query(`SELECT * FROM Venue WHERE venue_status='Available'`);
     res.json(venues);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleDbError(error, res);
   }
 };
 
@@ -214,8 +215,8 @@ exports.getDynamicVenues = async (req, res) => {
       [city, start, end]
     );
     res.json(venues);
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -229,8 +230,8 @@ exports.getSessionsForEvent = async (req, res) => {
        [req.params.id]
     );
     res.json(sessions);
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -243,8 +244,8 @@ exports.getSpeakers = async (req, res) => {
        WHERE ur.role_type = 'Speaker'`
     );
     res.json(speakers);
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -262,8 +263,8 @@ exports.getSessionAllocations = async (req, res) => {
       [id]
     );
     res.json(allocations);
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -287,8 +288,8 @@ exports.allocateResource = async (req, res) => {
       [id, resource_id, quantity, sess[0].start_time, sess[0].end_time, quantity, quantity]
     );
     res.json({ message: "Resource correctly allocated to session" });
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
 
@@ -301,7 +302,7 @@ exports.releaseResource = async (req, res) => {
       [id, res_id]
     );
     res.json({ message: "Resource released actively" });
-  } catch(error) {
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    return handleDbError(error, res);
   }
 };
